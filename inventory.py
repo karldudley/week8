@@ -1,101 +1,198 @@
-
 #========The beginning of the class==========
 class Shoe:
-
     def __init__(self, country, code, product, cost, quantity):
-        pass
-        '''
-        In this function, you must initialise the following attributes:
-            ● country,
-            ● code,
-            ● product,
-            ● cost, and
-            ● quantity.
-        '''
+        self.country = country
+        self.code = code
+        self.product = product
+        self.cost = cost
+        self.quantity = quantity
+
     def get_cost(self):
-        pass
-        '''
-        Add the code to return the cost of the shoe in this method.
-        '''
+        return self.cost
 
     def get_quantity(self):
-        pass
-        '''
-        Add the code to return the quantity of the shoes.
-        '''
+        return self.quantity
 
     def __str__(self):
-        pass
+        return f'''
+Country: {self.country}
+Code: {self.code}
+Name: {self.product}
+Cost: {self.cost}
+Quantity: {self.quantity}
         '''
-        Add a code to returns a string representation of a class.
-        '''
-
-
 #=============Shoe list===========
-'''
-The list will be used to store a list of objects of shoes.
-'''
 shoe_list = []
 #==========Functions outside the class==============
 def read_shoes_data():
-    pass
-    '''
-    This function will open the file inventory.txt
-    and read the data from this file, then create a shoes object with this data
-    and append this object into the shoes list. One line in this file represents
-    data to create one object of shoes. You must use the try-except in this function
-    for error handling. Remember to skip the first line using your code.
-    '''
+    shoe_list.clear()
+    try:
+        # read the shoes file
+        file = open("inventory.txt", "r")
+        print("\nData found. Reading...\n")
+        all_shoes = file.read()
+        
+        # create a list of shoes
+        shoe_line = all_shoes.split("\n")
+
+        # loop through list of shoes and print to screen
+        for pos, shoe in enumerate(shoe_line, 1):
+            # split shoe into each seperate detail
+            deets = shoe.split(',')
+
+            # skip first line of the file
+            if pos == 1:
+                continue
+            
+            # break for loop if we reached the last line of the file
+            if len(deets) <= 1:
+                break
+
+            # create shoe object and append to shoes list
+            new_shoe = Shoe(deets[0], deets[1], deets[2], int(deets[3]), int(deets[4]))
+            shoe_list.append(new_shoe)
+
+    except FileNotFoundError as error:
+        print("The file was not found")
+        print(error)
+
+    finally:
+        # close the file
+        if file is not None:
+            file.close()
+
+def write_shoes_data():
+    # write the updated shoe list to file
+    with open("inventory.txt", "w") as file:
+        file.write("Country,Code,Product,Cost,Quantity\n")
+        for shoe in shoe_list:
+            file.write(f"{shoe.country},{shoe.code},{shoe.product},{shoe.cost},{shoe.quantity}\n")
+
 def capture_shoes():
-    pass
-    '''
-    This function will allow a user to capture data
-    about a shoe and use this data to create a shoe object
-    and append this object inside the shoe list.
-    '''
+    # get user input
+    print()
+    country = input("Please enter country:\t")
+    code = input("Please enter code:\t")
+    name = input("Please enter name:\t")
+    cost = int(input("Please enter cost:\t"))
+    quantity = int(input("Please enter quantity:\t"))
+    print()
+    # create shoe object and append to shoes list
+    new_shoe = Shoe(country, code, name, cost, quantity)
+    shoe_list.append(new_shoe)
+
+    # update file with captured data
+    write_shoes_data()
 
 def view_all():
-    pass
-    '''
-    This function will iterate over the shoes list and
-    print the details of the shoes returned from the __str__
-    function. Optional: you can organise your data in a table format
-    by using Python’s tabulate module.
-    '''
+    for pos, shoe in enumerate(shoe_list):
+        print(f"------------------Line {pos}------------------")
+        print(shoe)
 
 def re_stock():
-    pass
-    '''
-    This function will find the shoe object with the lowest quantity,
-    which is the shoes that need to be re-stocked. Ask the user if they
-    want to add this quantity of shoes and then update it.
-    This quantity should be updated on the file for this shoe.
-    '''
+    # find the lowest stock in the shoe list
+    lowest = shoe_list[0]
+    index = 0
+    for pos, shoe in enumerate(shoe_list,0):
+        if shoe.quantity < lowest.quantity:
+            lowest = shoe
+            index = pos
 
-def seach_shoe():
-    pass
-    '''
-     This function will search for a shoe from the list
-     using the shoe code and return this object so that it will be printed.
-    '''
+    # show the lowest stock
+    print("\nLowest Stock")
+    print(lowest)
+
+    # ask how much to restock by
+    while (True):
+        try:
+            restock = int(input("How much would you like to restock?\t"))
+            break
+        except ValueError:
+            print("Oops! That was not a valid number. Try again...")
+
+    # print restock details and update the correct shoe in the list
+    print(f"\nAdding {restock} to stock\n")
+    shoe_list[index].quantity += restock
+
+    # update file with restock
+    write_shoes_data()
+
+def search_by_id():
+    # ask how much to restock by
+    shoe_id = input("\nEnter the shoe ID:\t")
+    if (search_shoe(shoe_id)):
+        print("\nShoe found...")
+        print(search_shoe(shoe_id))
+    else:
+        print("\nShoe not found...\n")
+
+def search_shoe(id):
+    for shoe in shoe_list:
+        if shoe.code == id:
+            return shoe
+    # return false if no match
+    return False
 
 def value_per_item():
-    pass
-    '''
-    This function will calculate the total value for each item.
-    Please keep the formula for value in mind: value = cost * quantity.
-    Print this information on the console for all the shoes.
-    '''
+    print("Total value per shoe line. Printing...\n")
+
+    # loop though shoe list and print the shoe details and total value
+    for pos, shoe in enumerate(shoe_list,1):
+        print(f"------------------Line {pos}------------------")
+        print(shoe)
+        print(f"Total value: {shoe.quantity} x {shoe.cost} = {shoe.quantity*shoe.cost}\n")
 
 def highest_qty():
-    pass
-    '''
-    Write code to determine the product with the highest quantity and
-    print this shoe as being for sale.
-    '''
+    # set highest to the first shoe in the list
+    highest = shoe_list[0]
+
+    # find the highest stock in the shoe list
+    for shoe in shoe_list:
+        if shoe.quantity > highest.quantity:
+            highest = shoe
+
+    # show the highest stock
+    print("\nHighest Stock")
+    print(highest)
+
 
 #==========Main Menu=============
-'''
-Create a menu that executes each function above.
-This menu should be inside the while loop. Be creative!
-'''
+# read shoe file and store in list
+read_shoes_data()
+
+print("Welcome to Inventory Manager\n")
+
+while True:
+    #presenting the menu to the user and 
+    # making sure that the user input is coneverted to lower case.
+    menu = input('''Select one of the following options below:
+
+r  - Read shoe data from file
+m  - Manually add shoe data
+va - View all shoe lines
+vh - View highest stock
+vv - View value of each stock line
+u  - Update lowest stock
+s  - Search by ID
+e  - Exit
+: ''').lower()
+
+    if menu == 'r':
+        read_shoes_data()
+    elif menu == 'm':
+        capture_shoes()
+    elif menu == 'va':
+        view_all()
+    elif menu == 'u':
+        re_stock()
+    elif menu == 'vh':
+        highest_qty()
+    elif menu == 'vv':
+        value_per_item()
+    elif menu == 's':
+        search_by_id()
+    elif menu == 'e':
+        print('\nGoodbye!!!\n')
+        exit()
+    else:
+        print("\nYou have made a wrong choice. Please try again...\n")
